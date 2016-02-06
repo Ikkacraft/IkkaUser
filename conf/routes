@@ -3,15 +3,15 @@
 # ~~~~
 
 # Home page
-GET           /                      controllers.Application.index
+GET           /                      @controllers.Application.index
 
 # Connect
-POST          /connect               controllers.Authentification.connect()
-POST          /disconnect            controllers.Authentification.disconnect()
+POST          /connect               @controllers.Authentification.connect()
+POST          /disconnect            @controllers.Authentification.disconnect()
 
 # Users
-GET           /users                 controllers.Users.getUsers()
-GET           /users/:user_id        controllers.Users.getUser(user_id: Long)
-POST          /users                 controllers.Users.createUser()
-PUT           /users/:user_id        controllers.Users.updateUser(user_id: Long)
-DELETE        /users/:user_id        controllers.Users.deleteUser(user_id: Long)
+GET           /users                 @controllers.Users.getUsers()
+GET           /users/:user_id        @controllers.Users.getUser(user_id: String)
+POST          /users                 @controllers.Users.createUser()
+PUT           /users/:user_id        @controllers.Users.updateUser(user_id: String)
+DELETE        /users/:user_id        @controllers.Users.deleteUser(user_id: String)
