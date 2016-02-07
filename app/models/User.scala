@@ -11,9 +11,9 @@ import play.api.libs.json.{Json, Writes}
  *
  * @param uuid Account Balance
  */
-case class User(uuid: UUID, account_id: Long, role_id: Long, pseudo: String, flag_connection: Int, token: Option[String], var town_id: Option[Long]) {
+case class User(uuid: UUID, account_id: Long, role_id: Long, pseudo: String, flag_connection: Option[Int], token: Option[String], var town_id: Option[Long]) {
   def this(uuid: UUID, account_id: Long, role_id: Long, pseudo: String) {
-    this(uuid, account_id, role_id, pseudo, 0, null, null)
+    this(uuid, account_id, role_id, pseudo, null, null, null)
   }
 
   def setTown(v: Option[Long]) {
@@ -30,7 +30,7 @@ object User {
       get[Long]("ID_ACCOUNT") ~
       get[Long]("ID_ROLE") ~
       get[String]("PSEUDO") ~
-      get[Int]("FLAGCONNECTION") ~
+      get[Option[Int]]("FLAGCONNECTION") ~
       get[Option[String]]("TOKEN") ~
       get[Option[Long]]("ID_TOWN") map {
       case uuid ~ account_id ~ role_id ~ pseudo ~ flag_connection ~ token ~ town_id =>
