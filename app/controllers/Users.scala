@@ -24,7 +24,6 @@ class Users @Inject()(userService: UserService) extends Controller {
     }
   }
 
-  // TODO: create account
   def createUser() = Action.async(parse.json) { request =>
     val uuid: String = (request.body \ "uuid").as[String]
     val role_id: Long = (request.body \ "role_id").as[Long]
@@ -58,4 +57,6 @@ class Users @Inject()(userService: UserService) extends Controller {
   def deleteUser(user_id: String) = Action {
     Ok(Json.toJson(userService.delete(UUID.fromString(user_id))))
   }
+
+  def getBadgesByUser(user_id: String) = play.mvc.Results.TODO
 }
