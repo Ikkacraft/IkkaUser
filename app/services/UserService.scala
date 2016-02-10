@@ -17,7 +17,7 @@ class UserService @Inject()(ws: WSClient) {
 
   def getAll(): List[User] = {
     val results: List[User] = DB.withConnection { implicit c =>
-      SQL( """SELECT * FROM USER""").as(User.parser.*)
+      SQL( """SELECT * FROM USER ORDER BY FLAGCONNECTION DESC""").as(User.parser.*)
     }
     results
   }
@@ -29,7 +29,6 @@ class UserService @Inject()(ws: WSClient) {
     result
   }
 
-  // TODO: create an account before create user
   def create(user: User):Future[Int] = {
     val data = Json.obj(
       "account_balance" -> 200,

@@ -41,7 +41,7 @@ class Users @Inject()(userService: UserService) extends Controller {
     val account_id: Long = (request.body \ "account_id").as[Long]
     val role_id: Long = (request.body \ "role_id").as[Long]
     val pseudo: String = (request.body \ "pseudo").as[String]
-    val flag_connection: Option[Int] = (request.body \ "flag_connection").asOpt[Int]
+    val flag_connection: Int = (request.body \ "flag_connection").as[Int]
     val token: Option[String] = (request.body \ "token").asOpt[String]
     val town_id: Option[Long] = (request.body \ "town_id").asOpt[Long]
 
