@@ -29,22 +29,22 @@ class UserService @Inject()(ws: WSClient) {
     result
   }
 
-  def create(user: User):Future[Int] = {
+  def create(user: User): Future[Int] = {
     val data = Json.obj(
       "account_balance" -> 200,
       "description" -> " "
     )
     val url = "http://localhost:9000/accounts"
-    val futureResponse: Future[WSResponse] = ws.url(url).post(data)
+    val futureAccountResponse: Future[WSResponse] = ws.url(url).post(data)
 
-    val result: Future[Int] = futureResponse map { response: WSResponse =>
+    val result: Future[Int] = futureAccountResponse map { response: WSResponse =>
       insert(user, response.body.toLong)
     }
     result
   }
 
-  def insert(user:User, account_id:Long):Int = {
-    val id:Int = DB.withConnection { implicit c =>
+  def insert(user: User, account_id: Long): Int = {
+    val id: Int = DB.withTransaction { implicit c =>
       SQL("INSERT INTO USER(UUID, ID_ACCOUNT, ID_ROLE, PSEUDO) VALUES({uuid}, {account_id}, {role_id}, {pseudo})")
         .on('uuid -> user.uuid, 'account_id -> account_id, 'role_id -> user.role_id, 'pseudo -> user.pseudo).executeUpdate()
     }
