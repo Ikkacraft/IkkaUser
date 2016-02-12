@@ -44,7 +44,7 @@ class UserService @Inject()(ws: WSClient) {
   }
 
   def insert(user: User, account_id: Long): Int = {
-    val id: Int = DB.withTransaction { implicit c =>
+    val id: Int = DB.withConnection { implicit c =>
       SQL("INSERT INTO USER(UUID, ID_ACCOUNT, ID_ROLE, PSEUDO) VALUES({uuid}, {account_id}, {role_id}, {pseudo})")
         .on('uuid -> user.uuid, 'account_id -> account_id, 'role_id -> user.role_id, 'pseudo -> user.pseudo).executeUpdate()
     }
