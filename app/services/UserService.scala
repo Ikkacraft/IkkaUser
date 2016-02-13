@@ -4,7 +4,7 @@ import java.util.UUID
 
 import anorm._
 import com.google.inject.Inject
-import models.User
+import models.{Role, User}
 import play.api.Play.current
 import play.api.db._
 import play.api.libs.json.Json
@@ -14,6 +14,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UserService @Inject()(ws: WSClient) {
+  def getRoles(): List[Role] = {
+    val results: List[Role] = DB.withConnection { implicit c =>
+      SQL( """SELECT * FROM ROLE""").as(Role.parser.*)
+    }
+    results
+  }
+
 
   def getAll(): List[User] = {
     val results: List[User] = DB.withConnection { implicit c =>

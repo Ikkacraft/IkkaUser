@@ -59,4 +59,8 @@ class Users @Inject()(userService: UserService) extends Controller {
   }
 
   def getBadgesByUser(user_id: String) = play.mvc.Results.TODO
+
+  def getRoles() = Action {
+    Ok(Json.toJson(userService.getRoles()))
+  }
 }

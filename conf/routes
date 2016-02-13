@@ -11,6 +11,7 @@ POST          /disconnect                   @controllers.Authentification.discon
 
 # Users
 GET           /users                        @controllers.Users.getUsers()
+GET           /users/roles                  @controllers.Users.getRoles()
 GET           /users/:user_id               @controllers.Users.getUser(user_id: String)
 GET           /users/:user_id/badges        @controllers.Users.getBadgesByUser(user_id: String)
 POST          /users                        @controllers.Users.createUser()
