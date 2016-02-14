@@ -1,19 +1,32 @@
 package actions
 
-import play.Logger
+import java.util.UUID
+
+import play.api.libs.ws.{WS, WSClient}
 import play.api.mvc._
+import services.UserService
+import play.api.Play.current
 import scala.concurrent.Future
 
-class Authorized(username: String, password: String) extends ActionBuilder[Request] with ActionFilter[Request] {
+class Authorized extends ActionBuilder[Request] with ActionFilter[Request] {
+
+  private val http: WSClient = WS.client
+  private val userService: UserService = new UserService(http)
+
 
   private val unauthorized =
     Results.Unauthorized.withHeaders("WWW-Authenticate" -> "Basic realm=Unauthorized")
 
   def filter[A](request: Request[A]): Future[Option[Result]] = {
     val result = request.headers.get("Authorization") map { authHeader =>
-      val (user, pass) = decodeBasicAuth(authHeader)
-      println("user : "+user + "password : " + pass)
-      if (user == username && pass == password) None else Some(unauthorized)
+      val (uuid, token:String) = decodeBasicAuth(authHeader)
+      userService.get(UUID.fromString(uuid)) match {
+        case Some(user) => {
+          if (UUID.fromString(uuid) == user.uuid && token == user.token.getOrElse("")) None else Some(unauthorized)
+        }
+        case None => Some(unauthorized)
+      }
+
     } getOrElse Some(unauthorized)
 
     Future.successful(result)
@@ -27,8 +40,6 @@ class Authorized(username: String, password: String) extends ActionBuilder[Reque
   }
 }
 
-object Authorized extends ActionBuilder[Request] {
-  def invokeBlock[A](request: Request[A], block: (Request[A]) => Future[Result]) = {
-    Logger.info("Calling action")
-    block(request)
-  }}
+object Authorized extends Authorized{
+
+ }
