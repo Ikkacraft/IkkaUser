@@ -6,8 +6,8 @@
 GET           /                             @controllers.Application.index
 
 # Connect
-POST          /connect                      @controllers.Authentification.connect()
-POST          /disconnect                   @controllers.Authentification.disconnect()
+POST          /connect/:context             @controllers.Authentification.connect(context:String)
+POST          /disconnect                   @controllers.Authentification.disconnect(context:String)
 
 # Users
 GET           /users                        @controllers.Users.getUsers()

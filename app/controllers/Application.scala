@@ -1,10 +1,13 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
+import actions.Authorized
+import play.api.mvc.Controller
+
 
 class Application extends Controller {
 
-  def index = Action {
+
+  def index = Authorized {
     Ok("Your new application is ready.")
   }
 

@@ -7,13 +7,46 @@ import com.google.inject.Inject
 import models.{Role, User}
 import play.api.Play.current
 import play.api.db._
-import play.api.libs.json.Json
 import play.api.libs.ws._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-
 class UserService @Inject()(ws: WSClient) {
+
+  def webAuthentication(uuid: UUID, token: String): Int = {
+    val id: Int = DB.withTransaction { implicit c =>
+      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=1 WHERE UUID = {uuid} AND FLAGCONNECTION=0").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=2").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("commit;").executeUpdate()
+    }
+    id
+  }
+
+  def webDisconnection(uuid: UUID): Int = {
+    val id: Int = DB.withTransaction { implicit c =>
+      SQL("UPDATE USER SET FLAGCONNECTION=2 WHERE UUID = {uuid} AND FLAGCONNECTION=3").on('uuid -> uuid).executeUpdate()
+      SQL("UPDATE USER SET TOKEN = '', FLAGCONNECTION=0 WHERE UUID = {uuid} AND FLAGCONNECTION=1").on('uuid -> uuid).executeUpdate()
+      SQL("commit;").executeUpdate()
+    }
+    id
+  }
+
+  def minecraftAuthentication(uuid: UUID, token: String): Int = {
+    val id: Int = DB.withTransaction { implicit c =>
+      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=2 WHERE UUID = {uuid} AND FLAGCONNECTION=0").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=1").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("commit;").executeUpdate()
+    }
+    id
+  }
+
+  def minecraftDisconnection(uuid: UUID): Int = {
+    val id: Int = DB.withTransaction { implicit c =>
+      SQL("UPDATE USER SET FLAGCONNECTION=2 WHERE UUID = {uuid} AND FLAGCONNECTION=3").on('uuid -> uuid).executeUpdate()
+      SQL("UPDATE USER SET TOKEN = '', FLAGCONNECTION=0 WHERE UUID = {uuid} AND FLAGCONNECTION=2").on('uuid -> uuid).executeUpdate()
+      SQL("commit;").executeUpdate()
+    }
+    id
+  }
+
   def getRoles(): List[Role] = {
     val results: List[Role] = DB.withConnection { implicit c =>
       SQL( """SELECT * FROM ROLE""").as(Role.parser.*)
@@ -36,24 +69,16 @@ class UserService @Inject()(ws: WSClient) {
     result
   }
 
-  def create(user: User): Future[Int] = {
-    val data = Json.obj(
-      "account_balance" -> 200,
-      "description" -> " "
-    )
-    val url = "http://localhost:9000/accounts"
-    val futureAccountResponse: Future[WSResponse] = ws.url(url).post(data)
-
-    val result: Future[Int] = futureAccountResponse map { response: WSResponse =>
-      insert(user, response.body.toLong)
-    }
-    result
-  }
-
-  def insert(user: User, account_id: Long): Int = {
-    val id: Int = DB.withConnection { implicit c =>
+  def create(user: User, account_balance:BigDecimal, description:String): Int  = {
+    val id: Int = DB.withTransaction { implicit c =>
+      val account_id: Option[Long] = DB.withConnection { implicit c =>
+        SQL("INSERT INTO ACCOUNT(account_balance, description) VALUES({account_balance}, {description})")
+          .on('account_balance -> account_balance, 'description -> description).executeInsert()
+      }
+      account_id.getOrElse(-1)
       SQL("INSERT INTO USER(UUID, ID_ACCOUNT, ID_ROLE, PSEUDO) VALUES({uuid}, {account_id}, {role_id}, {pseudo})")
-        .on('uuid -> user.uuid, 'account_id -> account_id, 'role_id -> user.role_id, 'pseudo -> user.pseudo).executeUpdate()
+        .on('uuid -> user.uuid, 'account_id -> account_id, 'role_id -> user.role_id, 'pseudo -> user.pseudo).executeInsert()
+      SQL("commit;").executeUpdate()
     }
     id
   }
@@ -73,10 +98,15 @@ class UserService @Inject()(ws: WSClient) {
     id
   }
 
-  // TODO: delete account/badges associés (transaction maybe)
   def delete(user_id: UUID): Int = {
-    val id: Int = DB.withConnection { implicit c =>
+
+    val id: Int = DB.withTransaction { implicit c =>
+      SQL("SELECT @account_id:=ID_ACCOUNT FROM USER WHERE UUID = {user_id}").on('user_id -> user_id).execute()
+      SQL("UPDATE USER SET ID_ACCOUNT = null WHERE UUID = {user_id}").on('user_id -> user_id).executeUpdate()
+      SQL("DELETE FROM ACCOUNT WHERE ID = @account_id").on('user_id -> user_id).executeUpdate()
+      SQL("DELETE FROM UNBLOCK WHERE UUID = {user_id}").on('user_id -> user_id).executeUpdate()
       SQL("DELETE FROM USER WHERE UUID = {user_id}").on('user_id -> user_id).executeUpdate()
+      SQL("commit;").executeUpdate()
     }
     id
   }
