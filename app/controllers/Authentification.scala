@@ -31,23 +31,25 @@ class Authentification @Inject()(ws: WSClient, userService: UserService) extends
     futureResponse map {
       case (response) => {
         if (response.status == 200) {
-          response.json
-          val id:String = (response.json \ "selectedProfile" \ "id").as[String]
-          val uuid:String = id.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")
-          val token:String = (response.json \ "clientToken").as[String]
+          val id: String = (response.json \ "selectedProfile" \ "id").as[String]
+          val uuid: String = id.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")
+          val token: String = (response.json \ "clientToken").as[String]
+          val pseudo: String = (response.json \ "selectedProfile" \ "name").as[String]
 
-          if (context == "web") userService.webAuthentication(UUID.fromString(uuid), token) else
+          if (context == "web") userService.webAuthentication(UUID.fromString(uuid), token)
+          else
             userService.minecraftAuthentication(UUID.fromString(uuid), token)
 
 
           val result: JsValue = Json.obj(
             "uuid" -> uuid,
-            "token" -> token
+            "token" -> token,
+            "pseudo" -> pseudo
           )
 
           Ok(Json.toJson(result))
         } else {
-          BadRequest("The request failed, please contact your admin =D ")
+          BadRequest("The request failed, please contact your admin :" + response.body)
         }
       }
     }
@@ -56,7 +58,8 @@ class Authentification @Inject()(ws: WSClient, userService: UserService) extends
   def disconnect(context: String) = Action(parse.json) { request =>
     val uuid: String = (request.body \ "uuid").as[String]
 
-    if (context == "web") userService.webDisconnection(UUID.fromString(uuid)) else
+    if (context == "web") userService.webDisconnection(UUID.fromString(uuid))
+    else
       userService.minecraftDisconnection(UUID.fromString(uuid))
 
     Ok("Disconnection Done")
