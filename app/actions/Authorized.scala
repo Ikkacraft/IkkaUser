@@ -11,7 +11,7 @@ import scala.concurrent.Future
 class Authorized extends ActionBuilder[Request] with ActionFilter[Request] {
 
   private val http: WSClient = WS.client
-  private val userService: UserService = new UserService(http)
+  private val userService: UserService = new UserService()
 
 
   private val unauthorized =
@@ -19,7 +19,7 @@ class Authorized extends ActionBuilder[Request] with ActionFilter[Request] {
 
   def filter[A](request: Request[A]): Future[Option[Result]] = {
     val result = request.headers.get("Authorization") map { authHeader =>
-      val (uuid, token:String) = decodeBasicAuth(authHeader)
+      val (uuid, token: String) = decodeBasicAuth(authHeader)
       userService.get(UUID.fromString(uuid)) match {
         case Some(user) => {
           if (UUID.fromString(uuid) == user.uuid && token == user.token.getOrElse("")) None else Some(unauthorized)
@@ -32,7 +32,7 @@ class Authorized extends ActionBuilder[Request] with ActionFilter[Request] {
     Future.successful(result)
   }
 
-  private [this] def decodeBasicAuth(authHeader: String): (String, String) = {
+  private[this] def decodeBasicAuth(authHeader: String): (String, String) = {
     val baStr = authHeader.replaceFirst("Basic ", "")
     val decoded = new sun.misc.BASE64Decoder().decodeBuffer(baStr)
     val Array(user, password) = new String(decoded).split(":")
@@ -40,6 +40,4 @@ class Authorized extends ActionBuilder[Request] with ActionFilter[Request] {
   }
 }
 
-object Authorized extends Authorized{
-
- }
+object Authorized extends Authorized

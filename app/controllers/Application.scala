@@ -11,4 +11,7 @@ class Application extends Controller {
     Ok("Your new application is ready.")
   }
 
+  def authorized = Authorized {
+    Ok("Your are authorized")
+  }
 }
