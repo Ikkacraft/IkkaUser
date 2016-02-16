@@ -1,16 +1,15 @@
 package controllers
 
 import java.util.UUID
+import javax.inject.Inject
 
 import play.api.libs.json._
-import javax.inject.Inject
+import play.api.libs.ws._
+import play.api.mvc._
 import services.UserService
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.api.mvc._
-import play.api.libs.ws._
+import scala.concurrent.Future
 
 class Authentification @Inject()(ws: WSClient, userService: UserService) extends Controller {
 
@@ -31,15 +30,15 @@ class Authentification @Inject()(ws: WSClient, userService: UserService) extends
     futureResponse map {
       case (response) => {
         if (response.status == 200) {
-          val id: String = (response.json \ "selectedProfile" \ "id").as[String]
-          val uuid: String = id.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")
-          val token: String = (response.json \ "clientToken").as[String]
+          val id: String     = (response.json \ "selectedProfile" \ "id").as[String]
+          val uuid: String   = id.replaceAll("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")
           val pseudo: String = (response.json \ "selectedProfile" \ "name").as[String]
-
-          if (context == "web") userService.webAuthentication(UUID.fromString(uuid), token)
+          var token: String  = UUID.randomUUID().toString.replaceAll("-", "")
+          if (context == "web"){
+            token = userService.webAuthentication(UUID.fromString(uuid), token)
+          }
           else
-            userService.minecraftAuthentication(UUID.fromString(uuid), token)
-
+            token = userService.minecraftAuthentication(UUID.fromString(uuid), token)
 
           val result: JsValue = Json.obj(
             "uuid" -> uuid,
