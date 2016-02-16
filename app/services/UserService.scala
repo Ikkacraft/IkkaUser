@@ -3,13 +3,11 @@ package services
 import java.util.UUID
 
 import anorm._
-import com.google.inject.Inject
 import models.{Role, User}
 import play.api.Play.current
 import play.api.db._
-import play.api.libs.ws._
 
-class UserService @Inject()(ws: WSClient) {
+class UserService {
 
   def webAuthentication(uuid: UUID, token: String): Int = {
     val id: Int = DB.withTransaction { implicit c =>

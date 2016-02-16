@@ -20,6 +20,17 @@ case class User(uuid: UUID, account_id: Long, role_id: Long, pseudo: String, fla
     town_id = v
   }
 
+  def toXml = {
+    <user>
+      <uuid>{uuid}</uuid>
+      <account_id>{account_id}</account_id>
+      <role_id>{role_id}</role_id>
+      <pseudo>{pseudo}</pseudo>
+      <flag_connection>{flag_connection}</flag_connection>
+      {if (token.isDefined) <token>{token.get}</token> else <token />}
+      {if (town_id.isDefined) <town_id>{town_id.get}</town_id> else <town_id />}
+    </user>
+  }
 }
 
 object User {

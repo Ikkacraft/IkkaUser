@@ -5,7 +5,14 @@ import anorm.SqlParser._
 import play.api.libs.json.{Json, Writes}
 
 
-case class Role(role_id: Long, label: String)
+case class Role(role_id: Long, label: String) {
+  def toXml = {
+    <role>
+      <role_id>{role_id}</role_id>
+      <label>{label}</label>
+    </role>
+  }
+}
 
 
 object Role {
