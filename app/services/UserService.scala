@@ -9,13 +9,15 @@ import play.api.db._
 
 class UserService {
 
-  def webAuthentication(uuid: UUID, token: String): Int = {
-    val id: Int = DB.withTransaction { implicit c =>
+  def webAuthentication(uuid: UUID, token: String): String = {
+    DB.withTransaction { implicit c =>
       SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=1 WHERE UUID = {uuid} AND FLAGCONNECTION=0").on('uuid -> uuid, 'token -> token).executeUpdate()
-      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=2").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("UPDATE USER SET FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=2").on('uuid -> uuid, 'token -> token).executeUpdate()
       SQL("commit;").executeUpdate()
     }
-    id
+    DB.withConnection { implicit c =>
+      SQL( """SELECT TOKEN FROM USER WHERE UUID = {uuid}""").on('uuid -> uuid).as(SqlParser.str("token").single)
+    }
   }
 
   def webDisconnection(uuid: UUID): Int = {
@@ -27,13 +29,15 @@ class UserService {
     id
   }
 
-  def minecraftAuthentication(uuid: UUID, token: String): Int = {
-    val id: Int = DB.withTransaction { implicit c =>
+  def minecraftAuthentication(uuid: UUID, token: String): String = {
+    DB.withTransaction { implicit c =>
       SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=2 WHERE UUID = {uuid} AND FLAGCONNECTION=0").on('uuid -> uuid, 'token -> token).executeUpdate()
-      SQL("UPDATE USER SET TOKEN = {token}, FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=1").on('uuid -> uuid, 'token -> token).executeUpdate()
+      SQL("UPDATE USER SET FLAGCONNECTION=3 WHERE UUID = {uuid} AND FLAGCONNECTION=1").on('uuid -> uuid, 'token -> token).executeUpdate()
       SQL("commit;").executeUpdate()
     }
-    id
+    DB.withConnection { implicit c =>
+      SQL( """SELECT TOKEN FROM USER WHERE UUID = {uuid}""").on('uuid -> uuid).as(SqlParser.str("token").single)
+    }
   }
 
   def minecraftDisconnection(uuid: UUID): Int = {

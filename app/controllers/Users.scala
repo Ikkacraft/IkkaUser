@@ -3,20 +3,40 @@ package controllers
 import java.util.UUID
 import javax.inject.Inject
 
-import models.User
+import models.{Role, User}
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.UserService
 
 class Users @Inject()(userService: UserService) extends Controller {
-  def getUsers() = Action {
-    Ok(Json.toJson(userService.getAll()))
+  def getUsers() = Action { request =>
+    request.accepts("application/json") || request.accepts("text/json") match {
+      case true => {
+        val users: List[User] = userService.getAll()
+        if (users.isEmpty) NoContent else Ok(Json.toJson(users))
+      }
+      case false => {
+        val users: List[User] = userService.getAll()
+        if (users.isEmpty) NoContent
+        else Ok(<users>{users.map(a => a.toXml)}</users>)
+      }
+    }
   }
 
-  def getUser(user_id: String) = Action {
-    userService.get(UUID.fromString(user_id)) match {
-      case Some(user) => Ok(Json.toJson(user))
-      case None => NotFound
+  def getUser(user_id: String) = Action { request =>
+    request.accepts("application/json") || request.accepts("text/json") match {
+      case true => {
+        userService.get(UUID.fromString(user_id)) match {
+          case Some(user) => Ok(Json.toJson(user))
+          case None => NoContent
+        }
+      }
+      case false => {
+        userService.get(UUID.fromString(user_id)) match {
+          case Some(user) => Ok(user.toXml)
+          case None => NoContent
+        }
+      }
     }
   }
 
@@ -26,7 +46,6 @@ class Users @Inject()(userService: UserService) extends Controller {
     val pseudo: String = (request.body \ "pseudo").as[String]
     val account_description: String = (request.body \ "account_description").as[String]
     val account_balance: BigDecimal = (request.body \ "account_balance").as[BigDecimal]
-
     val user = new User(UUID.fromString(uuid), 0, role_id, pseudo)
 
     userService.create(user, account_balance, account_description) match {
@@ -56,9 +75,17 @@ class Users @Inject()(userService: UserService) extends Controller {
     Ok(Json.toJson(userService.delete(UUID.fromString(user_id))))
   }
 
-  def getBadgesByUser(user_id: String) = play.mvc.Results.TODO
-
-  def getRoles() = Action {
-    Ok(Json.toJson(userService.getRoles()))
+  def getRoles() = Action { request =>
+    request.accepts("application/json") || request.accepts("text/json") match {
+      case true => {
+        val roles: List[Role] = userService.getRoles()
+        if (roles.isEmpty) NoContent else Ok(Json.toJson(roles))
+      }
+      case false => {
+        val roles: List[Role] = userService.getRoles()
+        if (roles.isEmpty) NoContent
+        else Ok(<roles>{roles.map(a => a.toXml)}</roles>)
+      }
+    }
   }
 }
