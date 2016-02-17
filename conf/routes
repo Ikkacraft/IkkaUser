@@ -3,17 +3,20 @@
 # ~~~~
 
 # Home page
-GET           /                             @controllers.Application.index
+GET           /                           @controllers.Application.index
+
+# Documentation
+GET           /swagger.json               @controllers.ApiHelpController.getResources
 
 # Authentification
-GET           /authorized                   @controllers.Application.authorized
-POST          /connect/:context             @controllers.Authentification.connect(context:String)
-POST          /disconnect                   @controllers.Authentification.disconnect(context:String)
+GET           /authorized                 @controllers.Application.authorized
+POST          /connect/:context           @controllers.Authentification.connect(context:String)
+POST          /disconnect/:context        @controllers.Authentification.disconnect(context:String)
 
 # Users
-GET           /users                        @controllers.Users.getUsers
-GET           /users/roles                  @controllers.Users.getRoles
-GET           /users/:user_id               @controllers.Users.getUser(user_id: String)
-POST          /users                        @controllers.Users.createUser
-PUT           /users/:user_id               @controllers.Users.updateUser(user_id: String)
-DELETE        /users/:user_id               @controllers.Users.deleteUser(user_id: String)
+GET           /users                      @controllers.Users.getUsers
+GET           /users/roles                @controllers.Users.getRoles
+GET           /users/:user_id             @controllers.Users.getUser(user_id: String)
+POST          /users                      @controllers.Users.createUser
+PUT           /users/:user_id             @controllers.Users.updateUser(user_id: String)
+DELETE        /users/:user_id             @controllers.Users.deleteUser(user_id: String)

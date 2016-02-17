@@ -3,6 +3,7 @@ package controllers
 import java.util.UUID
 import javax.inject.Inject
 
+import io.swagger.annotations.{ApiResponse, ApiResponses, ApiOperation, Api}
 import play.api.libs.json._
 import play.api.libs.ws._
 import play.api.mvc._
@@ -11,8 +12,15 @@ import services.UserService
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+@Api(value = "/", description = "Operations about authentification",produces="application/json, application/xml")
 class Authentification @Inject()(ws: WSClient, userService: UserService) extends Controller {
 
+  @ApiOperation(
+    nickname = "connect",
+    value = "ask to be connected", httpMethod = "POST")
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The request failed, please contact your admin"),
+    new ApiResponse(code = 200, message = "The user has been successfully created")))
   def connect(context: String) = Action.async(parse.json) { request =>
     val username: String = (request.body \ "username").as[String]
     val password: String = (request.body \ "password").as[String]
@@ -46,7 +54,11 @@ class Authentification @Inject()(ws: WSClient, userService: UserService) extends
             "pseudo" -> pseudo
           )
 
-          Ok(Json.toJson(result))
+          request.accepts("application/json") || request.accepts("text/json") match {
+            case true => Ok(Json.toJson(result))
+            case false => Ok(<credentials><uuid>{uuid}</uuid> <token>{token}</token> <pseudo>{pseudo}</pseudo></credentials>)
+          }
+
         } else {
           BadRequest("The request failed, please contact your admin :" + response.body)
         }
@@ -54,6 +66,10 @@ class Authentification @Inject()(ws: WSClient, userService: UserService) extends
     }
   }
 
+  @ApiOperation(
+    nickname = "disconnect",
+    value = "ask to be disconnect", httpMethod = "POST")
+  @ApiResponses(Array(new ApiResponse(code = 200, message = "Disconnection Done")))
   def disconnect(context: String) = Action(parse.json) { request =>
     val uuid: String = (request.body \ "uuid").as[String]
 

@@ -1,0 +1,297 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0",
+    "title": "",
+    "contact": {
+      "name": ""
+    },
+    "license": {
+      "name": "",
+      "url": "http://licenseUrl"
+    }
+  },
+  "host": "localhost:9001",
+  "basePath": "%SWAGGER_API_BASEPATH%",
+  "tags": [
+    {
+      "name": "users"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Test web service is up",
+        "description": "",
+        "operationId": "index",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Your new application is ready."
+          }
+        }
+      }
+    },
+    "/authorized": {
+      "get": {
+        "summary": "Test authorization",
+        "description": "",
+        "operationId": "authorized",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Your are authorized"
+          },
+          "401": {
+            "description": "Non Authorized"
+          }
+        }
+      }
+    },
+    "/connect/{context}": {
+      "post": {
+        "summary": "ask to be connected",
+        "description": "",
+        "operationId": "connect",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "context",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user has been successfully created"
+          },
+          "400": {
+            "description": "The request failed, please contact your admin"
+          }
+        }
+      }
+    },
+    "/disconnect/{context}": {
+      "post": {
+        "summary": "ask to be disconnect",
+        "description": "",
+        "operationId": "disconnect",
+        "produces": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "context",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Disconnection Done"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get all users",
+        "description": "Return a list of users",
+        "operationId": "getUsers",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Users found"
+          },
+          "404": {
+            "description": "Users not found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Create an user",
+        "description": "",
+        "operationId": "createUser",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The user has been successfully created"
+          },
+          "400": {
+            "description": "The user could not be created"
+          }
+        }
+      }
+    },
+    "/users/roles": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get all roles",
+        "description": "",
+        "operationId": "getRoles",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Roles found"
+          },
+          "404": {
+            "description": "Roles not found"
+          }
+        }
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get a specific user",
+        "description": "Return a user",
+        "operationId": "getUser",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User found"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update an user",
+        "description": "",
+        "operationId": "updateUser",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user has been successfully updated"
+          },
+          "400": {
+            "description": "The user could not be updated"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete a user",
+        "description": "",
+        "operationId": "deleteUser",
+        "consumes": [
+          "application/json",
+          "application/xml"
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user has been successfully deleted"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "account_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "role_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "pseudo": {
+          "type": "string"
+        },
+        "flag_connection": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "token": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "town_id": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "ActionAnyContent": {
+      "type": "object"
+    },
+    "ActionJsValue": {
+      "type": "object"
+    }
+  }
+}

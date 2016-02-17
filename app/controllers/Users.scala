@@ -3,43 +3,65 @@ package controllers
 import java.util.UUID
 import javax.inject.Inject
 
+import actions.Authorized
+import io.swagger.annotations._
 import models.{Role, User}
 import play.api.libs.json.Json
 import play.api.mvc._
 import services.UserService
 
+@Api(value = "/users", description = "Operations about users", consumes="application/json, application/xml")
 class Users @Inject()(userService: UserService) extends Controller {
-  def getUsers() = Action { request =>
+
+  @ApiOperation(
+    nickname = "getUsers",
+    value = "Get all users",
+    notes = "Return a list of users",
+    response = classOf[models.User], httpMethod = "GET")
+  @ApiResponses(Array(new ApiResponse(code = 404, message = "Users not found"), new ApiResponse(code = 200, message = "Users found")))
+  def getUsers() = Authorized { request =>
     request.accepts("application/json") || request.accepts("text/json") match {
       case true => {
         val users: List[User] = userService.getAll()
-        if (users.isEmpty) NoContent else Ok(Json.toJson(users))
+        if (users.isEmpty) NotFound("Users not found") else Ok(Json.toJson(users))
       }
       case false => {
         val users: List[User] = userService.getAll()
-        if (users.isEmpty) NoContent
-        else Ok(<users>{users.map(a => a.toXml)}</users>)
+        if (users.isEmpty) NotFound("Users not found") else Ok(<users>{users.map(a => a.toXml)}</users>)
       }
     }
   }
 
-  def getUser(user_id: String) = Action { request =>
+  @ApiOperation(
+    nickname = "getUser",
+    value = "Get a specific user",
+    notes = "Return a user",
+    response = classOf[models.User], httpMethod = "GET")
+  @ApiResponses(Array(new ApiResponse(code = 404, message = "User not found"), new ApiResponse(code = 200, message = "User found")))
+  def getUser(user_id: String) = Authorized { request =>
     request.accepts("application/json") || request.accepts("text/json") match {
       case true => {
         userService.get(UUID.fromString(user_id)) match {
           case Some(user) => Ok(Json.toJson(user))
-          case None => NoContent
+          case None => NotFound("User not found")
         }
       }
       case false => {
         userService.get(UUID.fromString(user_id)) match {
           case Some(user) => Ok(user.toXml)
-          case None => NoContent
+          case None => NotFound("User not found")
         }
       }
     }
   }
 
+  @ApiOperation(
+    nickname = "createUser",
+    value = "Create an user",
+    response = classOf[models.User], httpMethod = "POST")
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The user could not be created"),
+    new ApiResponse(code = 200, message = "The user has been successfully created")))
   def createUser() = Action(parse.json) { request =>
     val uuid: String = (request.body \ "uuid").as[String]
     val role_id: Long = (request.body \ "role_id").as[Long]
@@ -54,7 +76,14 @@ class Users @Inject()(userService: UserService) extends Controller {
     }
   }
 
-  def updateUser(user_id: String) = Action(parse.json) { request =>
+  @ApiOperation(
+    nickname = "updateUser",
+    value = "Update an user",
+    response = classOf[models.User], httpMethod = "PUT")
+  @ApiResponses(Array(
+    new ApiResponse(code = 400, message = "The user could not be updated"),
+    new ApiResponse(code = 200, message = "The user has been successfully updated")))
+  def updateUser(user_id: String) = Authorized(parse.json) { request =>
     val account_id: Long = (request.body \ "account_id").as[Long]
     val role_id: Long = (request.body \ "role_id").as[Long]
     val pseudo: String = (request.body \ "pseudo").as[String]
@@ -65,27 +94,34 @@ class Users @Inject()(userService: UserService) extends Controller {
     val user = new User(UUID.fromString(user_id), account_id, role_id, pseudo, flag_connection, token, town_id)
     userService.update(user) match {
       case 0 => BadRequest("The user could not be updated")
-      case _ => {
-        Ok("The user has been successfully updated")
-      }
+      case _ => Ok("The user has been successfully updated")
     }
   }
 
-  def deleteUser(user_id: String) = Action {
-    Ok(Json.toJson(userService.delete(UUID.fromString(user_id))))
-  }
-
+  @ApiOperation(
+    nickname = "getRoles",
+    value = "Get all roles",
+    response = classOf[models.User], httpMethod = "GET")
+  @ApiResponses(Array(new ApiResponse(code = 404, message = "Roles not found"), new ApiResponse(code = 200, message = "Roles found")))
   def getRoles() = Action { request =>
     request.accepts("application/json") || request.accepts("text/json") match {
       case true => {
         val roles: List[Role] = userService.getRoles()
-        if (roles.isEmpty) NoContent else Ok(Json.toJson(roles))
+        if (roles.isEmpty) NotFound("Roles not found") else Ok(Json.toJson(roles))
       }
       case false => {
         val roles: List[Role] = userService.getRoles()
-        if (roles.isEmpty) NoContent
-        else Ok(<roles>{roles.map(a => a.toXml)}</roles>)
+        if (roles.isEmpty) NotFound("Roles not found") else Ok(<roles>{roles.map(a => a.toXml)}</roles>)
       }
     }
+  }
+
+  @ApiOperation(
+    nickname = "deleteUser",
+    value = "Delete a user",
+    response = classOf[models.User], httpMethod = "DELETE")
+  @ApiResponses(Array(new ApiResponse(code = 200, message = "The user has been successfully deleted")))
+  def deleteUser(user_id: String) = Action {
+    Ok(Json.toJson(userService.delete(UUID.fromString(user_id))))
   }
 }
